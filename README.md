@@ -1,5 +1,7 @@
 # Iconv
 
+[![Build Status](https://travis-ci.org/nurse/iconv.png)](https://travis-ci.org/nurse/iconv)
+
 iconv wrapper, used to be ext/iconv
 
 ## Abstract
