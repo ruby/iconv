@@ -8,7 +8,7 @@ require 'optparse'
 HEADER = <<SRC
 require 'iconv.so'
 
-class Iconv
+class Iconv < Data
   case RUBY_PLATFORM
 SRC
 

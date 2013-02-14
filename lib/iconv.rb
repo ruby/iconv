@@ -1,6 +1,6 @@
 require "iconv/iconv.so"
 require "iconv/version"
 
-class Iconv
+class Iconv < Data
   # Your code goes here...
 end
