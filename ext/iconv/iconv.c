@@ -13,12 +13,18 @@
 
 **********************************************************************/
 
-#include "ruby/ruby.h"
+#include "ruby.h"
 #include <errno.h>
 #include <iconv.h>
 #include <assert.h>
+#ifdef HAVE_RUBY_ST_H
 #include "ruby/st.h"
+#else /* assume 1.8 */
+#include "st.h"
+#endif
+#ifdef HAVE_RUBY_ENCODING_H
 #include "ruby/encoding.h"
+#endif
 
 /*
  * Document-class: Iconv
@@ -932,6 +938,7 @@ iconv_iconv(int argc, VALUE *argv, VALUE self)
 	    length = NIL_P(n2) ? -1 : NUM2LONG(n2);
 	}
     }
+#ifdef HAVE_RUBY_ENCODING_H
     if (start > 0 || length > 0) {
 	rb_encoding *enc = rb_enc_get(str);
 	const char *s = RSTRING_PTR(str), *e = s + RSTRING_LEN(str);
@@ -943,6 +950,7 @@ iconv_iconv(int argc, VALUE *argv, VALUE self)
 	    length = rb_enc_nth(ps, e, length, enc) - ps;
 	}
     }
+#endif
 
     return iconv_convert(VALUE2ICONV(cd), str, start, length, ENCODING_GET(self), NULL);
 }

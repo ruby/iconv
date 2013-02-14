@@ -5,9 +5,11 @@ dir_config("iconv")
 conf = File.exist?(File.join($srcdir, "config.charset"))
 conf = with_config("config-charset", enable_config("config-charset", conf))
 
+have_func("rb_enc_get", "ruby/encoding.h")
+have_func("st_lookup", "ruby/st.h")
 if have_func("iconv", "iconv.h") or
     have_library("iconv", "iconv", "iconv.h")
-  check_signedness("size_t")
+  check_signedness("size_t") rescue nil
   if checking_for("const of iconv() 2nd argument") do
       create_tmpsrc(cpp_include("iconv.h") + "---> iconv(cd,0,0,0,0) <---")
       src = xpopen(cpp_command("")) {|f|f.read}
