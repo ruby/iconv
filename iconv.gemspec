@@ -8,11 +8,12 @@ Gem::Specification.new do |gem|
   gem.version       = Iconv::VERSION
   gem.authors       = ["NARUSE, Yui"]
   gem.email         = ["naruse@airemix.jp"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{iconv wrapper library}
+  gem.summary       = %q{iconv wrapper library}
+  gem.homepage      = "https://github.com/nurse/iconv"
 
   gem.files         = `git ls-files`.split($/)
+  gem.extensions    = ['ext/iconv/extconf.rb']
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]

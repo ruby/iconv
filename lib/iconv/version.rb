@@ -1,3 +1,3 @@
-module Iconv
-  VERSION = "0.0.1"
+class Iconv
+  VERSION = "1.0.0"
 end

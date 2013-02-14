@@ -1,5 +1,6 @@
+require "iconv/iconv.so"
 require "iconv/version"
 
-module Iconv
+class Iconv
   # Your code goes here...
 end
