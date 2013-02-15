@@ -12,8 +12,8 @@ file "lib/#{NAME}/#{NAME}.so" =>
   Dir.chdir("ext/#{NAME}") do
     # this does essentially the same thing
     # as what RubyGems does
-    ruby "extconf.rb"
-    sh "make"
+    ruby "extconf.rb", *ARGV.grep(/\A--/)
+    sh "make", *ARGV.grep(/\A(?!--)/)
   end
   cp "ext/#{NAME}/#{NAME}.so", "lib/#{NAME}"
 end

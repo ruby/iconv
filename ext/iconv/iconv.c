@@ -17,13 +17,60 @@
 #include <errno.h>
 #include <iconv.h>
 #include <assert.h>
-#ifdef HAVE_RUBY_ST_H
-#include "ruby/st.h"
-#else /* assume 1.8 */
-#include "st.h"
-#endif
 #ifdef HAVE_RUBY_ENCODING_H
-#include "ruby/encoding.h"
+  /* assume Ruby 1.9 or later */
+# include "ruby/st.h"
+# include "ruby/encoding.h"
+#else
+# include "st.h"
+# include <stdarg.h>
+# define rb_f_notimplement rb_notimplement
+# define rb_str_subseq(a, b, c) rb_str_substr(a, b, c)
+# define rb_str_new_cstr(a) rb_str_new2(a)
+NORETURN(static void rb_sys_fail_str(VALUE msg));
+static void
+rb_sys_fail_str(VALUE msg)
+{
+    rb_sys_fail(RSTRING_PTR(msg));
+}
+static VALUE
+rb_str_equal(str1, str2)
+    VALUE str1, str2;
+{
+    if (str1 == str2) return Qtrue;
+    if (TYPE(str2) != T_STRING) {
+	if (!rb_respond_to(str2, rb_intern("to_str"))) {
+	    return Qfalse;
+	}
+	return rb_equal(str2, str1);
+    }
+    if (RSTRING(str1)->len == RSTRING(str2)->len &&
+	rb_str_cmp(str1, str2) == 0) {
+	return Qtrue;
+    }
+    return Qfalse;
+}
+void
+rb_set_errinfo(VALUE err)
+{
+    extern VALUE ruby_errinfo;
+    ruby_errinfo = err;
+}
+#define ENCODING_GET(a) 0
+VALUE
+rb_sprintf(const char *format, ...)
+{
+    va_list ap;
+    char *ret;
+    int len;
+
+    va_start(ap, format);
+    len = vasprintf(&ret, format, ap);
+    va_end(ap);
+    if (len == -1) return Qnil;
+
+    return rb_str_new(ret, len);
+}
 #endif
 
 /*
@@ -212,7 +259,9 @@ iconv_create(VALUE to, VALUE from, struct rb_iconv_opt_t *opt, int *idx)
     iconv_t cd;
     int retry = 0;
 
+#ifdef HAVE_RUBY_ENCODING_H
     *idx = rb_enc_find_index(tocode);
+#endif
 
     if (toopt) {
 	toenc = rb_str_plus(to, toopt);
@@ -499,7 +548,9 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 	    {
 		if (NIL_P(str)) {
 		    ret = rb_str_new(buffer, outlen);
+#ifdef HAVE_RUBY_ENCODING_H
 		    if (toidx >= 0) rb_enc_associate_index(ret, toidx);
+#endif
 		}
 		else {
 		    if (ret) {
@@ -507,7 +558,9 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 		    }
 		    else {
 			ret = rb_str_new(instart, tmpstart - instart);
+#ifdef HAVE_RUBY_ENCODING_H
 			if (toidx >= 0) rb_enc_associate_index(ret, toidx);
+#endif
 			OBJ_INFECT(ret, str);
 		    }
 		    ret = rb_str_buf_cat(ret, buffer, outlen);
@@ -529,7 +582,9 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 
 	    if (!ret) {
 		ret = rb_str_derive(str, instart, inptr - instart);
+#ifdef HAVE_RUBY_ENCODING_H
 		if (toidx >= 0) rb_enc_associate_index(ret, toidx);
+#endif
 	    }
 	    else if (inptr > instart) {
 		rb_str_cat(ret, instart, inptr - instart);
@@ -555,7 +610,9 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 
     if (!ret) {
 	ret = rb_str_derive(str, instart, inptr - instart);
+#ifdef HAVE_RUBY_ENCODING_H
 	if (toidx >= 0) rb_enc_associate_index(ret, toidx);
+#endif
     }
     else if (inptr > instart) {
 	rb_str_cat(ret, instart, inptr - instart);
@@ -673,7 +730,9 @@ iconv_initialize(int argc, VALUE *argv, VALUE self)
     iconv_free(check_iconv(self));
     DATA_PTR(self) = NULL;
     DATA_PTR(self) = (void *)ICONV2VALUE(iconv_create(to, from, &opt, &idx));
+#ifdef HAVE_RUBY_ENCODING_H
     if (idx >= 0) ENCODING_SET(self, idx);
+#endif
     return self;
 }
 
@@ -697,7 +756,9 @@ iconv_s_open(int argc, VALUE *argv, VALUE self)
     cd = ICONV2VALUE(iconv_create(to, from, &opt, &idx));
 
     self = Data_Wrap_Struct(self, NULL, ICONV_FREE, (void *)cd);
+#ifdef HAVE_RUBY_ENCODING_H
     if (idx >= 0) ENCODING_SET(self, idx);
+#endif
 
     if (rb_block_given_p()) {
 	return rb_ensure(rb_yield, self, (VALUE(*)())iconv_finish, self);
@@ -838,7 +899,7 @@ iconv_s_list(void)
 
     args[1] = rb_block_given_p() ? 0 : rb_ary_new();
     iconvlist(list_iconv, args);
-    state = *(int *)args;
+    state = (int)args[0];
     if (state) rb_jump_tag(state);
     if (args[1]) return args[1];
 #elif defined(HAVE___ICONV_FREE_LIST)
@@ -930,27 +991,38 @@ iconv_iconv(int argc, VALUE *argv, VALUE self)
 
     rb_scan_args(argc, argv, "12", &str, &n1, &n2);
     if (!NIL_P(str)) {
+#ifdef HAVE_RUBY_ENCODING_H
 	VALUE n = rb_str_length(StringValue(str));
 	slen = NUM2LONG(n);
+#else
+	slen = RSTRING_LEN(StringValue(str));
+#endif
     }
     if (argc != 2 || !RTEST(rb_range_beg_len(n1, &start, &length, slen, 0))) {
 	if (NIL_P(n1) || ((start = NUM2LONG(n1)) < 0 ? (start += slen) >= 0 : start < slen)) {
 	    length = NIL_P(n2) ? -1 : NUM2LONG(n2);
 	}
     }
-#ifdef HAVE_RUBY_ENCODING_H
     if (start > 0 || length > 0) {
-	rb_encoding *enc = rb_enc_get(str);
+#ifdef HAVE_RUBY_ENCODING_H
 	const char *s = RSTRING_PTR(str), *e = s + RSTRING_LEN(str);
 	const char *ps = s;
+	rb_encoding *enc = rb_enc_get(str);
 	if (start > 0) {
 	    start = (ps = rb_enc_nth(s, e, start, enc)) - s;
 	}
 	if (length > 0) {
 	    length = rb_enc_nth(ps, e, length, enc) - ps;
 	}
-    }
+#else
+	if (start > slen) {
+	    start = slen;
+	}
+	if (length > slen - start) {
+	    length = slen - start;
+	}
 #endif
+    }
 
     return iconv_convert(VALUE2ICONV(cd), str, start, length, ENCODING_GET(self), NULL);
 }

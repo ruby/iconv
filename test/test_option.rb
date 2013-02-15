@@ -1,4 +1,4 @@
-require_relative "utils.rb"
+require File.expand_path("../utils.rb", __FILE__)
 
 class TestIconv::Option < TestIconv
   def test_ignore_option
