@@ -73,6 +73,9 @@ rb_sprintf(const char *format, ...)
 }
 #endif
 
+#define rb_sys_fail_str(s) rb_iconv_sys_fail_str(s)
+#define rb_sys_fail(s) rb_iconv_sys_fail(s)
+
 /*
  * Document-class: Iconv
  *
@@ -217,15 +220,26 @@ map_charset(VALUE *code)
     VALUE val = StringValue(*code);
 
     if (RHASH_SIZE(charset_map)) {
+#ifdef RBX_CAPI_RUBY_H /* If Rubinius defined */
+	VALUE data;
+	VALUE key = rb_funcall2(val, rb_intern("downcase"), 0, 0);
+	StringValuePtr(key);
+	data = rb_hash_aref(charset_map, key);
+	if(!NIL_P(data)) {
+	    *code = (VALUE)data;
+	}
+#else        
 	st_data_t data;
 	VALUE key = rb_funcall2(val, rb_intern("downcase"), 0, 0);
 	StringValuePtr(key);
 	if (st_lookup(RHASH_TBL(charset_map), key, &data)) {
 	    *code = (VALUE)data;
 	}
+#endif        
     }
     return StringValuePtr(*code);
 }
+
 
 NORETURN(static void rb_iconv_sys_fail_str(VALUE msg));
 static void
@@ -237,7 +251,6 @@ rb_iconv_sys_fail_str(VALUE msg)
     rb_sys_fail_str(msg);
 }
 
-#define rb_sys_fail_str(s) rb_iconv_sys_fail_str(s)
 
 NORETURN(static void rb_iconv_sys_fail(const char *s));
 static void
@@ -246,7 +259,6 @@ rb_iconv_sys_fail(const char *s)
     rb_iconv_sys_fail_str(rb_str_new_cstr(s));
 }
 
-#define rb_sys_fail(s) rb_iconv_sys_fail(s)
 
 static iconv_t
 iconv_create(VALUE to, VALUE from, struct rb_iconv_opt_t *opt, int *idx)
