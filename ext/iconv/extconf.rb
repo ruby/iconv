@@ -8,6 +8,7 @@ conf = with_config("config-charset", enable_config("config-charset", conf))
 unless have_func("rb_enc_get", "ruby/encoding.h") || have_func("vasprintf", "stdio.h")
   raise "vasprintf is required for Ruby 1.8"
 end
+have_func("rb_sys_fail_str", "ruby.h")
 if have_func("iconv", "iconv.h") or
     have_library("iconv", "iconv", "iconv.h")
   check_signedness("size_t") rescue nil

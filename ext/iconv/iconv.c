@@ -27,12 +27,6 @@
 # define rb_f_notimplement rb_notimplement
 # define rb_str_subseq(a, b, c) rb_str_substr(a, b, c)
 # define rb_str_new_cstr(a) rb_str_new2(a)
-NORETURN(static void rb_sys_fail_str(VALUE msg));
-static void
-rb_sys_fail_str(VALUE msg)
-{
-    rb_sys_fail(RSTRING_PTR(msg));
-}
 static VALUE
 rb_str_equal(str1, str2)
     VALUE str1, str2;
@@ -70,6 +64,14 @@ rb_sprintf(const char *format, ...)
     if (len == -1) return Qnil;
 
     return rb_str_new(ret, len);
+}
+#endif
+#ifndef HAVE_RB_SYS_FAIL_STR
+NORETURN(static void rb_sys_fail_str(VALUE msg));
+static void
+rb_sys_fail_str(VALUE msg)
+{
+    rb_sys_fail(RSTRING_PTR(msg));
 }
 #endif
 
