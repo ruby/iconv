@@ -16,5 +16,6 @@ Gem::Specification.new do |gem|
   gem.extensions    = ['ext/iconv/extconf.rb']
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
+  gem.required_ruby_version = '>= 1.8.7'
   gem.require_paths = ["lib"]
 end
