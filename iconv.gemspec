@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["naruse@airemix.jp"]
   gem.description   = %q{iconv wrapper library}
   gem.summary       = %q{iconv wrapper library}
-  gem.homepage      = "https://github.com/nurse/iconv"
+  gem.homepage      = "https://github.com/ruby/iconv"
 
   gem.files         = `git ls-files`.split($/)
   gem.extensions    = ['ext/iconv/extconf.rb']
