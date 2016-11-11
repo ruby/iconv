@@ -10,5 +10,9 @@ else
 end
 
 group :development, :test do
-  gem "test-unit"
+  if RUBY_VERSION < '1.9'
+    gem 'test-unit', '~> 2.5'
+  else
+    gem 'test-unit'
+  end
 end
