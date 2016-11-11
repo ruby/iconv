@@ -2,7 +2,13 @@ source 'https://rubygems.org'
 
 # Specify your gem's dependencies in iconv.gemspec
 gemspec
-gem "rake"
+
+if RUBY_VERSION < '1.9.3'
+  gem 'rake', '~> 10.0'
+else
+  gem 'rake'
+end
+
 group :development, :test do
   gem "test-unit"
 end
