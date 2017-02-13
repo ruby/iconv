@@ -60,8 +60,8 @@ Or install it yourself as:
 
 ## Attentions
 
-Even if some extentions of implementation dependent are useful,
-DON'T USE those extentions in libraries and scripts to widely distribute.
+Even if some extensions of implementation dependent are useful,
+DON'T USE those extensions in libraries and scripts to widely distribute.
 If you want to use those feature, use String#encode.
 
 ## Contributing
