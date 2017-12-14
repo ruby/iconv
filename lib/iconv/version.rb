@@ -1,3 +1,3 @@
-class Iconv < Data
+class Iconv
   VERSION = "1.0.4"
 end

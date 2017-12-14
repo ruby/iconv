@@ -1272,7 +1272,7 @@ iconv_failure_inspect(VALUE self)
 void
 Init_iconv(void)
 {
-    VALUE rb_cIconv = rb_define_class("Iconv", rb_cData);
+    VALUE rb_cIconv = rb_define_class("Iconv", rb_cObject);
 
     rb_define_alloc_func(rb_cIconv, iconv_s_allocate);
     rb_define_singleton_method(rb_cIconv, "open", iconv_s_open, -1);
