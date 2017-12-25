@@ -21,7 +21,9 @@ Which coding systems are available is platform-dependent.
 
 Add this line to your application's Gemfile:
 
-    gem 'iconv'
+```ruby
+gem 'iconv'
+```
 
 And then execute:
 
@@ -34,11 +36,11 @@ Or install it yourself as:
 ## Usage
 
 1. Simple conversion between two charsets.
-
-     converted_text = Iconv.conv('iso-8859-15', 'utf-8', text)
-
-2. Instantiate a new Iconv and use method Iconv#iconv.
-
+    ```ruby
+    converted_text = Iconv.conv('iso-8859-15', 'utf-8', text)
+    ```
+2. Instantiate a new `Iconv` and use method `Iconv#iconv`.
+    ```ruby
      cd = Iconv.new(to, from)
      begin
        input.each { |s| output << cd.iconv(s) }
@@ -46,23 +48,24 @@ Or install it yourself as:
      ensure
        cd.close
      end
-
-3. Invoke Iconv.open with a block.
-
+    ```
+3. Invoke `Iconv.open` with a block.
+    ```ruby
      Iconv.open(to, from) do |cd|
        input.each { |s| output << cd.iconv(s) }
        output << cd.iconv(nil)
      end
-
+    ```
 4. Shorthand for (3).
-
+    ```ruby
      Iconv.iconv(to, from, *input.to_a)
+    ```
 
 ## Attentions
 
 Even if some extensions of implementation dependent are useful,
 DON'T USE those extensions in libraries and scripts to widely distribute.
-If you want to use those feature, use String#encode.
+If you want to use those feature, use `String#encode`.
 
 ## Contributing
 
