@@ -1,6 +1,6 @@
 # Iconv
 
-[![Build Status](https://travis-ci.org/ruby/iconv.png)](https://travis-ci.org/ruby/iconv)
+[![Build Status](https://travis-ci.org/ruby/iconv.svg)](https://travis-ci.org/ruby/iconv)
 
 iconv wrapper, used to be ext/iconv
 
