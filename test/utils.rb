@@ -1,4 +1,4 @@
-gem 'iconv'
+#gem 'iconv'
 require 'iconv'
 require 'test/unit'
 
