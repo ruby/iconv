@@ -50,7 +50,6 @@ rb_set_errinfo(VALUE err)
     extern VALUE ruby_errinfo;
     ruby_errinfo = err;
 }
-#define ENCODING_GET(a) 0
 VALUE
 rb_sprintf(const char *format, ...)
 {
@@ -73,6 +72,13 @@ rb_sys_fail_str(VALUE msg)
 {
     rb_sys_fail(RSTRING_PTR(msg));
 }
+#endif
+
+#ifdef HAVE_RUBY_ENCODING_H
+# define ICONV_ENCODING_SET(obj,idx) rb_ivar_set(obj, id_encoding, rb_enc_from_encoding(rb_enc_from_index(idx)))
+# define ICONV_ENCODING_GET(obj) rb_enc_to_index(rb_to_encoding(rb_ivar_get(obj, id_encoding)))
+#else
+# define ICONV_ENCODING_GET(a) 0
 #endif
 
 /*
@@ -150,7 +156,7 @@ struct rb_iconv_opt_t
     VALUE discard_ilseq;
 };
 
-static ID id_transliterate, id_discard_ilseq;
+static ID id_transliterate, id_discard_ilseq, id_encoding;
 
 static VALUE rb_eIconvInvalidEncoding;
 static VALUE rb_eIconvFailure;
@@ -734,7 +740,7 @@ iconv_initialize(int argc, VALUE *argv, VALUE self)
     DATA_PTR(self) = NULL;
     DATA_PTR(self) = (void *)ICONV2VALUE(iconv_create(to, from, &opt, &idx));
 #ifdef HAVE_RUBY_ENCODING_H
-    if (idx >= 0) ENCODING_SET(self, idx);
+    if (idx >= 0) ICONV_ENCODING_SET(self, idx);
 #endif
     return self;
 }
@@ -760,7 +766,7 @@ iconv_s_open(int argc, VALUE *argv, VALUE self)
 
     self = Data_Wrap_Struct(self, NULL, ICONV_FREE, (void *)cd);
 #ifdef HAVE_RUBY_ENCODING_H
-    if (idx >= 0) ENCODING_SET(self, idx);
+    if (idx >= 0) ICONV_ENCODING_SET(self, idx);
 #endif
 
     if (rb_block_given_p()) {
@@ -946,7 +952,7 @@ iconv_init_state(VALUE self)
 {
     iconv_t cd = VALUE2ICONV((VALUE)DATA_PTR(self));
     DATA_PTR(self) = NULL;
-    return iconv_convert(cd, Qnil, 0, 0, ENCODING_GET(self), NULL);
+    return iconv_convert(cd, Qnil, 0, 0, ICONV_ENCODING_GET(self), NULL);
 }
 
 static VALUE
@@ -1027,7 +1033,7 @@ iconv_iconv(int argc, VALUE *argv, VALUE self)
 #endif
     }
 
-    return iconv_convert(VALUE2ICONV(cd), str, start, length, ENCODING_GET(self), NULL);
+    return iconv_convert(VALUE2ICONV(cd), str, start, length, ICONV_ENCODING_GET(self), NULL);
 }
 
 /*
@@ -1043,7 +1049,7 @@ iconv_conv(int argc, VALUE *argv, VALUE self)
 {
     iconv_t cd = VALUE2ICONV(check_iconv(self));
     VALUE str, s;
-    int toidx = ENCODING_GET(self);
+    int toidx = ICONV_ENCODING_GET(self);
 
     str = iconv_convert(cd, Qnil, 0, 0, toidx, NULL);
     if (argc > 0) {
@@ -1311,6 +1317,7 @@ Init_iconv(void)
     rb_failed = rb_intern("failed");
     id_transliterate = rb_intern("transliterate");
     id_discard_ilseq = rb_intern("discard_ilseq");
+    id_encoding = rb_intern("encoding");
 
     rb_gc_register_address(&charset_map);
     charset_map = rb_hash_new();
