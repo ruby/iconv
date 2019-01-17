@@ -2,6 +2,7 @@
 *.o
 *.rbc
 *.so
+*.bundle
 *.swp
 .bundle
 .config
