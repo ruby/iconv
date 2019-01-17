@@ -7,7 +7,7 @@ NAME = 'iconv'
 # rule to build the extension: this says
 # that the extension should be rebuilt
 # after any change to the files in ext
-file "lib/#{NAME}/#{NAME}.so" =>
+file "lib/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}" =>
     Dir.glob("ext/#{NAME}/*{.rb,.c}") do
   Dir.chdir("ext/#{NAME}") do
     # this does essentially the same thing
@@ -15,19 +15,19 @@ file "lib/#{NAME}/#{NAME}.so" =>
     ruby "extconf.rb", *ARGV.grep(/\A--/)
     sh "make", *ARGV.grep(/\A(?!--)/)
   end
-  cp "ext/#{NAME}/#{NAME}.so", "lib/#{NAME}"
+  cp "ext/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}", "lib/#{NAME}"
 end
 
 # make the :test task depend on the shared
 # object, so it will be built automatically
 # before running the tests
-task :test => "lib/#{NAME}/#{NAME}.so"
+task :test => "lib/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}"
 
 # use 'rake clean' and 'rake clobber' to
 # easily delete generated files
-CLEAN.include('ext/**/*{.o,.log,.so}')
-CLEAN.include('ext/**/Makefile')
-CLOBBER.include('lib/**/*.so')
+CLEAN.include("ext/**/*{.o,.log,.#{RbConfig::CONFIG['DLEXT']}}")
+CLEAN.include("ext/**/Makefile")
+CLOBBER.include("lib/**/*.#{RbConfig::CONFIG['DLEXT']}")
 
 # the same as before
 Rake::TestTask.new do |t|
