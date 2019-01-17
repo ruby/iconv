@@ -56,4 +56,12 @@ class TestIconv::Basic < TestIconv
       Iconv.iconv("X-UNKNOWN-1", "X-UNKNOWN-2") {break}
     }
   end
+
+  def test_github_issue_16
+    i = Iconv.new('SHIFT_JISX0213', 'UTF-8')
+    ret = i.iconv('ほげ')
+    ret << i.iconv(nil)
+    i.close
+    assert_equal "\x82\xD9\x82\xB0".b, ret
+  end
 end

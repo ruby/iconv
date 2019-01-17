@@ -75,8 +75,14 @@ rb_sys_fail_str(VALUE msg)
 #endif
 
 #ifdef HAVE_RUBY_ENCODING_H
-# define ICONV_ENCODING_SET(obj,idx) rb_ivar_set(obj, id_encoding, rb_enc_from_encoding(rb_enc_from_index(idx)))
-# define ICONV_ENCODING_GET(obj) rb_enc_to_index(rb_to_encoding(rb_ivar_get(obj, id_encoding)))
+# define ICONV_ENCODING_SET(obj,idx) rb_ivar_set(obj, id_encindex, INT2FIX(idx))
+static int
+iconv_get_encindex(VALUE obj, ID id_encindex)
+{
+    VALUE num_or_nil = rb_ivar_get(obj, id_encindex);
+    return NIL_P(num_or_nil) ? 0 : FIX2INT(num_or_nil);
+}
+# define ICONV_ENCODING_GET(obj) iconv_get_encindex(obj, id_encindex)
 #else
 # define ICONV_ENCODING_GET(a) 0
 #endif
@@ -156,7 +162,7 @@ struct rb_iconv_opt_t
     VALUE discard_ilseq;
 };
 
-static ID id_transliterate, id_discard_ilseq, id_encoding;
+static ID id_transliterate, id_discard_ilseq, id_encindex;
 
 static VALUE rb_eIconvInvalidEncoding;
 static VALUE rb_eIconvFailure;
@@ -1317,7 +1323,7 @@ Init_iconv(void)
     rb_failed = rb_intern("failed");
     id_transliterate = rb_intern("transliterate");
     id_discard_ilseq = rb_intern("discard_ilseq");
-    id_encoding = rb_intern("encoding");
+    id_encindex = rb_intern("encindex");
 
     rb_gc_register_address(&charset_map);
     charset_map = rb_hash_new();
