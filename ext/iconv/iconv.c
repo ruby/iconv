@@ -746,7 +746,7 @@ iconv_initialize(int argc, VALUE *argv, VALUE self)
     DATA_PTR(self) = NULL;
     DATA_PTR(self) = (void *)ICONV2VALUE(iconv_create(to, from, &opt, &idx));
 #ifdef HAVE_RUBY_ENCODING_H
-    if (idx >= 0) ICONV_ENCODING_SET(self, idx);
+    ICONV_ENCODING_SET(self, idx);
 #endif
     return self;
 }
