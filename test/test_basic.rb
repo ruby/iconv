@@ -1,3 +1,5 @@
+# coding: US-ASCII
+# This file needs to be compatible with Ruby 1.8
 require File.expand_path("../utils.rb", __FILE__)
 
 class TestIconv::Basic < TestIconv
@@ -59,7 +61,7 @@ class TestIconv::Basic < TestIconv
 
   def test_github_issue_16
     i = Iconv.new('SHIFT_JISX0213', 'UTF-8')
-    ret = i.iconv('ほげ')
+    ret = i.iconv("\xE3\x81\xBB\xE3\x81\x92")
     ret << i.iconv(nil)
     i.close
     assert_equal "\x82\xD9\x82\xB0".b, ret
