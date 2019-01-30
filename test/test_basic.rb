@@ -65,5 +65,7 @@ class TestIconv::Basic < TestIconv
     ret << i.iconv(nil)
     i.close
     assert_equal "\x82\xD9\x82\xB0".b, ret
+  rescue Iconv::InvalidEncoding
+    # ignore if the iconv doesn't support SHIFT_JISX0213
   end
 end
