@@ -20,5 +20,5 @@ jobs:
       run: |
         gem install bundler --no-document
         bundle install
-    - name: Run test
-      run: rake test
+    - name: Run compile and test
+      run: rake
