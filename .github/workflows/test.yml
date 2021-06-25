@@ -1,4 +1,4 @@
-name: build
+name: CI
 
 on: [push, pull_request]
 
@@ -7,7 +7,7 @@ jobs:
     name: build (${{ matrix.ruby }} / ${{ matrix.os }})
     strategy:
       matrix:
-        ruby: [ 3.0, 2.7, 2.6, 2.5, 2.4, 2.3, head ]
+        ruby: [ '3.0', 2.7, 2.6, 2.5, 2.4, 2.3, head ]
         os: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -18,7 +18,6 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
     - name: Install dependencies
       run: |
-        gem install bundler --no-document
         bundle install
     - name: Run compile and test
       run: rake
