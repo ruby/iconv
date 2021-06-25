@@ -1,4 +1,7 @@
-gem 'iconv'
+begin
+  gem 'iconv'
+rescue
+end
 require 'iconv'
 require 'test/unit'
 
