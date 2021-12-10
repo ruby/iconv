@@ -32,7 +32,6 @@ else
       end
     cp "ext/#{NAME}/#{NAME}.#{RbConfig::CONFIG['DLEXT']}", "lib/#{NAME}"
     end
-  end
 
   # make the :test task depend on the shared
   # object, so it will be built automatically
