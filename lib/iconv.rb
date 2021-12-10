@@ -1,7 +1,7 @@
 
 case RUBY_ENGINE
 when 'jruby'
-  require "jruby-iconv.jar"
+  require "iconv/iconv_jruby.jar"
   org.jruby.ext.iconv.IConvLibrary.new.load(JRuby.runtime, false)
 else
   require "iconv/iconv.so"
