@@ -776,7 +776,7 @@ iconv_s_open(int argc, VALUE *argv, VALUE self)
 #endif
 
     if (rb_block_given_p()) {
-	return rb_ensure(rb_yield, self, (VALUE(*)())iconv_finish, self);
+	return rb_ensure(rb_yield, self, iconv_finish, self);
     }
     else {
 	return self;
