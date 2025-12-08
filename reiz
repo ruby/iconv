@@ -11,6 +11,7 @@ Gem::Specification.new do |gem|
   gem.description   = %q{iconv wrapper library}
   gem.summary       = %q{iconv wrapper library}
   gem.homepage      = "https://github.com/ruby/iconv"
+  gem.license       = 'BSD-2-Clause'
 
   gem.files         = `git ls-files`.split($/)
   gem.extensions    = ['ext/iconv/extconf.rb']
