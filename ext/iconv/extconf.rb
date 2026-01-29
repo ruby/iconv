@@ -9,6 +9,7 @@ unless have_func("rb_enc_get", "ruby/encoding.h") || have_func("vasprintf", "std
   raise "vasprintf is required for Ruby 1.8"
 end
 have_func("rb_sys_fail_str", "ruby.h")
+have_func("OBJ_INFECT", "ruby.h")
 if have_func("iconv", "iconv.h") or
     have_library("iconv", "iconv", "iconv.h")
   check_signedness("size_t") rescue nil
