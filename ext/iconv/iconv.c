@@ -185,6 +185,7 @@ static VALUE iconv_try _((iconv_t cd, const char **inptr, size_t *inlen, char **
 static VALUE rb_str_derive _((VALUE str, const char* ptr, long len));
 static VALUE iconv_convert _((iconv_t cd, VALUE str, long start, long length, int toidx,
 			      struct iconv_env_t* env));
+static const rb_data_type_t iconv_type;
 static VALUE iconv_s_allocate _((VALUE klass));
 static VALUE iconv_initialize _((int argc, VALUE *argv, VALUE self));
 static VALUE iconv_s_open _((int argc, VALUE *argv, VALUE self));
@@ -368,6 +369,13 @@ iconv_dfree(void *cd)
 
 #define ICONV_FREE iconv_dfree
 
+static const rb_data_type_t iconv_type = {
+    "iconv",
+    {NULL, iconv_dfree, NULL},
+    NULL, NULL,
+    RUBY_TYPED_FREE_IMMEDIATELY
+};
+
 static VALUE
 iconv_free(VALUE cd)
 {
@@ -379,11 +387,10 @@ iconv_free(VALUE cd)
 static VALUE
 check_iconv(VALUE obj)
 {
-    Check_Type(obj, T_DATA);
-    if (RDATA(obj)->dfree != ICONV_FREE) {
+    if (!rb_typeddata_is_kind_of(obj, &iconv_type)) {
 	rb_raise(rb_eArgError, "Iconv expected (%s)", rb_class2name(CLASS_OF(obj)));
     }
-    return (VALUE)DATA_PTR(obj);
+    return (VALUE)RTYPEDDATA_DATA(obj);
 }
 
 static VALUE
@@ -483,7 +490,9 @@ rb_str_derive(VALUE str, const char* ptr, long len)
 	ret = rb_str_subseq(str, ptr - RSTRING_PTR(str), len);
     else
 	ret = rb_str_new(ptr, len);
+#ifdef HAVE_OBJ_INFECT
     OBJ_INFECT(ret, str);
+#endif
     return ret;
 }
 
@@ -576,7 +585,9 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 #ifdef HAVE_RUBY_ENCODING_H
 			if (toidx >= 0) rb_enc_associate_index(ret, toidx);
 #endif
+#ifdef HAVE_OBJ_INFECT
 			OBJ_INFECT(ret, str);
+#endif
 		    }
 		    ret = rb_str_buf_cat(ret, buffer, outlen);
 		    instart = inptr;
@@ -638,7 +649,7 @@ iconv_convert(iconv_t cd, VALUE str, long start, long length, int toidx, struct 
 static VALUE
 iconv_s_allocate(VALUE klass)
 {
-    return Data_Wrap_Struct(klass, 0, ICONV_FREE, 0);
+    return TypedData_Wrap_Struct(klass, &iconv_type, 0);
 }
 
 static VALUE
@@ -743,8 +754,8 @@ iconv_initialize(int argc, VALUE *argv, VALUE self)
     rb_scan_args(argc, argv, "21", &to, &from, &options);
     get_iconv_opt(&opt, options);
     iconv_free(check_iconv(self));
-    DATA_PTR(self) = NULL;
-    DATA_PTR(self) = (void *)ICONV2VALUE(iconv_create(to, from, &opt, &idx));
+    RTYPEDDATA_DATA(self) = NULL;
+    RTYPEDDATA_DATA(self) = (void *)ICONV2VALUE(iconv_create(to, from, &opt, &idx));
 #ifdef HAVE_RUBY_ENCODING_H
     ICONV_ENCODING_SET(self, idx);
 #endif
@@ -770,7 +781,7 @@ iconv_s_open(int argc, VALUE *argv, VALUE self)
     get_iconv_opt(&opt, options);
     cd = ICONV2VALUE(iconv_create(to, from, &opt, &idx));
 
-    self = Data_Wrap_Struct(self, NULL, ICONV_FREE, (void *)cd);
+    self = TypedData_Wrap_Struct(self, &iconv_type, (void *)cd);
 #ifdef HAVE_RUBY_ENCODING_H
     if (idx >= 0) ICONV_ENCODING_SET(self, idx);
 #endif
@@ -957,8 +968,8 @@ iconv_s_list(VALUE klass)
 static VALUE
 iconv_init_state(VALUE self)
 {
-    iconv_t cd = VALUE2ICONV((VALUE)DATA_PTR(self));
-    DATA_PTR(self) = NULL;
+    iconv_t cd = VALUE2ICONV((VALUE)RTYPEDDATA_DATA(self));
+    RTYPEDDATA_DATA(self) = NULL;
     return iconv_convert(cd, Qnil, 0, 0, ICONV_ENCODING_GET(self), NULL);
 }
 
@@ -1330,4 +1341,3 @@ Init_iconv(void)
     charset_map = rb_hash_new();
     rb_define_singleton_method(rb_cIconv, "charset_map", charset_map_get, 0);
 }
-
