@@ -35,7 +35,7 @@ class TestIconv::Basic < TestIconv
 
   def test_open_with_block
     input = "#{EUCJ_STR}\n"*2
-    output = ""
+    output = String.new
     Iconv.open("Shift_JIS", "EUC-JP") do |cd|
       input.each_line do |s|
         output << cd.iconv(s)

@@ -4,7 +4,7 @@ require 'test/unit'
 class TestIconv < ::Test::Unit::TestCase
   if defined?(::Encoding) and String.method_defined?(:force_encoding)
     def self.encode(str, enc)
-      str.force_encoding(enc)
+      str.dup.force_encoding(enc)
     end
   else
     def self.encode(str, enc)
