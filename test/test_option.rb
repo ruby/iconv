@@ -1,13 +1,21 @@
 require File.expand_path("../utils.rb", __FILE__)
 
 class TestIconv::Option < TestIconv
-  def test_ignore_option
+  def setup
     begin
       iconv = Iconv.new('SHIFT_JIS', 'EUC-JP')
       iconv.transliterate?
     rescue NotImplementedError
-      return
+      omit "Iconv option is not implemented"
     end
+    @verbose, $VERBOSE = $VERBOSE, nil
+  end
+
+  def teardown
+    $VERBOSE = @verbose
+  end
+
+  def test_ignore_option
     iconv = Iconv.new('SHIFT_JIS', 'EUC-JP//ignore')
     str = iconv.iconv(EUCJ_STR)
     str << iconv.iconv(nil)
@@ -22,12 +30,6 @@ class TestIconv::Option < TestIconv
   end
 
   def test_translit_option
-    begin
-      iconv = Iconv.new('SHIFT_JIS', 'EUC-JP')
-      iconv.transliterate?
-    rescue NotImplementedError
-      return
-    end
     iconv = Iconv.new('SHIFT_JIS', 'EUC-JP//ignore')
     str = iconv.iconv(EUCJ_STR)
     str << iconv.iconv(nil)
