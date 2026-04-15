@@ -17,7 +17,7 @@ jobs:
         os: [ ubuntu-latest, macos-15-intel, macos-latest ]
         exclude:
           - os: macos-15-intel
-          - ruby: truffleruby
+            ruby: truffleruby
           - ruby: 2.3
             os: macos-latest
           - ruby: 2.4
